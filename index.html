@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Game Lật Hình ngành Nghĩa</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sigmar+One&display=swap" rel="stylesheet" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        :root {
+            --gap: 10px;
+            --board-size: min(1000px, 100vw);
+            --nghia-color-primary: #ffcc33;
+            /* Vàng sáng */
+            --nghia-color-secondary: #e69138;
+            /* Cam đậm */
+            --text-color: #6b2a00;
+            /* Màu nâu đỏ đậm */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Sigmar One", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("assets/background_image_noel.png") no-repeat center/cover;
+            filter: blur(5px);
+            transform: scale(1);
+            z-index: 0;
+        }
+
+        #snowflakeContainer {
+            position: fixed;
+            /* Quan trọng để tuyết ở trên cùng và cố định */
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Rất quan trọng: cho phép click xuyên qua tuyết */
+            z-index: 9999;
+            /* Đảm bảo tuyết ở trên cùng */
+        }
+
+        .snowflake {
+            /* Đặt style cơ bản cho mỗi bông tuyết */
+            position: fixed;
+            /* Giúp tuyết di chuyển theo viewport */
+            color: #f5efef;
+            user-select: none;
+            line-height: 1;
+            /* Để kích thước font quyết định kích thước */
+            transform: translate3d(0, 0, 0);
+            /* Khởi tạo biến đổi */
+            will-change: transform;
+            /* Báo cho trình duyệt tối ưu việc biến đổi */
+        }
+
+        .game-title {
+            width: 100%;
+            margin: 0 0 100px 0;
+            padding: 12px 0;
+            font-family: "Sigmar One", sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-align: center;
+            color: #b22222;
+            background: linear-gradient(90deg, #ffe259, #ffa751);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .sigmar-one-regular {
+            font-family: "Sigmar One", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .roboto {
+            font-family: "Roboto", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
+        }
+
+        .game-container {
+            position: relative;
+            z-index: 1;
+            /* đảm bảo game hiện rõ phía trên */
+        }
+
+        .board-wrapper {
+            position: relative;
+            width: var(--board-size);
+        }
+
+        .board-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .board-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .game-board {
+            position: relative;
+            z-index: 1;
+        }
+
+        .wrap {
+            width: var(--board-size);
+            max-width: 1111px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            width: 100%;
+        }
+
+        /* mỗi card có perspective riêng để thấy depth */
+        .card {
+            perspective: 1000px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: scale(1.05) rotateY(5deg);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            /* nổi lên chút khi hover */
+        }
+
+        /* giữ tỉ lệ vuông cho mỗi card */
+        .card-inner {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            position: relative;
+            transition: transform 600ms cubic-bezier(0.22, 0.9, 0.15, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+            overflow: visible;
+            box-shadow: 0 6px 14px rgba(16, 24, 40, 0.06);
+        }
+
+        /* khi có class flipped → xoay 180 độ */
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-inner::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            backface-visibility: hidden;
+            transition: opacity 0.2s linear;
+            z-index: 1;
+        }
+
+        /* khi card đang xoay (giữa 0 và 180) → bật mask */
+        .card-inner.is-flipping::after {
+            opacity: 0.4;
+            background: #000;
+        }
+
+        /* 2 mặt */
+        .card-front,
+        .card-back {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .card-front {
+            background: linear-gradient(180deg, #ffd54a 0%, #ffcc33 100%);
+            color: #6b2a00;
+            transform: none;
+            backface-visibility: hidden;
+        }
+
+        .card-back {
+            background: #fff;
+            transform: rotateY(180deg);
+            backface-visibility: hidden;
+        }
+
+        .shape {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: "Roboto", sans-serif;
+            pointer-events: none;
+            clip-path: polygon(0% 15%,
+                    22% 22%,
+                    15% 0%,
+                    85% 0%,
+                    78% 22%,
+                    100% 15%,
+                    100% 85%,
+                    78% 78%,
+                    85% 100%,
+                    15% 100%,
+                    22% 78%,
+                    0% 85%);
+            background: #ee0505ea;
+            color: #b10000;
+            font-weight: 900;
+            font-size: 20px;
+            padding: 8px;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12) inset;
+        }
+
+        .card-number {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            font-family: "Roboto", sans-serif;
+            background: rgba(0, 0, 0, 0.55);
+            color: white;
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-size: 24px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* mặt sau chứa ảnh - xoay 180deg sẵn */
+        .card-back {
+            transform: rotateY(180deg);
+            background: #eee;
+        }
+
+        .card-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* matched (đã tìm đúng) → fade out */
+        .card.matched .card-inner {
+            transition: transform 350ms, opacity 350ms;
+            opacity: 0;
+            transform: scale(0.92);
+            pointer-events: none;
+        }
+
+        /* popup */
+        .popup {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            padding: 20px;
+        }
+
+        .popup.show {
+            display: flex;
+        }
+
+        .popup-box {
+            background: white;
+            margin-top: 50px;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 60%;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.2);
+        }
+
+        .popup-box img {
+            max-width: 60%;
+            max-height: 93vh;
+            height: auto;
+            width: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .popup-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 0;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-true {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-false {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* responsive */
+        @media (max-width: 767px) {
+            .board-wrapper {
+                position: relative;
+                width: var(--board-size);
+                margin-bottom: 7rem;
+                bottom: 5rem;
+            }
+
+            .game-board {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                width: 100%;
+            }
+
+            .game-title {
+                width: 100%;
+                margin: 0 50px 100px 0;
+                padding: 7px 0;
+                font-family: "Sigmar One", sans-serif;
+                font-size: 1rem;
+                font-weight: 900;
+                text-align: center;
+                color: #b22222;
+                background: linear-gradient(90deg, #ffe259, #ffa751);
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                text-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+                letter-spacing: 2px;
+                position: relative;
+                z-index: 2;
+            }
+
+            .popup-box img {
+                height: 60vh;
+            }
+
+            .shape {
+                font-size: 12px;
+            }
+        }
+
+        /* tấm che riêng từng card */
+        .card-cover {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            z-index: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* khi card được matched */
+        .card.matched .card-inner,
+        .card.matched .card-cover {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none;
+        }
+
+        /* Thêm style cho Quiz Popup */
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-answer {
+            background: transparent;
+            color: var(--text-color);
+            border: 3px solid var(--nghia-color-secondary);
+            padding: 24px 12px 24px 50px;
+            border-radius: 999px;
+            font-weight: 500;
+            font-family: "Roboto", sans-serif;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+            position: relative;
+            text-align: left;
+        }
+
+        .btn-answer::before {
+            content: attr(data-answer);
+            /* Lấy ký tự (A, B, C, D) từ data-answer */
+            position: absolute;
+            left: 10px;
+            /* Đẩy ra sát mép trái (tính cả padding) */
+            top: 50%;
+            transform: translateY(-50%);
+
+            /* Style cho hình tròn */
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--nghia-color-secondary);
+            /* Màu nền hình tròn */
+            color: #000;
+            /* Màu chữ ký tự */
+            font-weight: 700;
+            font-size: 18px;
+
+            /* Căn giữa chữ A/B/C/D trong hình tròn */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-answer:hover {
+            background: var(--nghia-color-primary);
+            /* Đổi màu nền khi hover */
+            color: #000;
+            border-color: var(--nghia-color-primary);
+        }
+
+        .question-text {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 77px;
+            font-family: "Roboto", sans-serif;
+        }
+
+        .answer-result {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .popup-wrong .wrong-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .wrong-text {
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-size: 18px;
+            color: #dc2626;
+        }
+
+        @media (max-width: 767px) {
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+
+            .question-text {
+                font-size: 16px;
+            }
+        }
+
+        /* CSS Pháo hoa */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            /* Mặc định ẩn */
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .modal-overlay.show-modal {
+            display: flex;
+            opacity: 1;
+        }
+
+        #resultModal .modal-content {
+            position: relative;
+            /* RẤT QUAN TRỌNG */
+            overflow: hidden;
+            /* Ngăn pháo hoa bắn ra khỏi modal (tùy chọn) */
+        }
+
+        #resultModal.show-modal {
+            display: flex;
+            /* hoặc block, tùy thuộc vào cách bạn căn giữa */
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show-modal .modal-content {
+            transform: scale(1);
+        }
+
+        #modalTitle {
+            font-size: 2.5rem;
+            margin-top: 0;
+            font-weight: bold;
+        }
+
+        #modalMessage {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .close-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* --- CSS Cho Canvas Pháo Hoa (quan trọng: absolute) --- */
+        #fireworksCanvas {
+            /* Đặt Canvas lên trên Modal */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            /* Đảm bảo nó nằm trên mọi thứ */
+            pointer-events: none;
+            /* Không chặn click vào nút */
+            display: none;
+            /* Khởi tạo ẩn */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Tuyết rơi -->
+    <div id="snowflakeContainer"></div>
+
+    <div class="wrap">
+        <!-- <h1 class="game-title">NGHĨA SĨ - CHINH PHỤC</h1> -->
+        <h1 class="game-title">Chương trình Giáng Sinh ngành Nghĩa</h1>
+        <div class="board-wrapper">
+            <div class="board-bg">
+                <img src="./assets/result_image.jpg" alt="background" />
+            </div>
+            <div id="gameBoard" class="game-board"></div>
+        </div>
+    </div>
+
+    <!-- popup -->
+    <div id="quizPopup" class="popup" aria-hidden="true">
+        <div class="popup-box" role="dialog" aria-modal="true">
+            <p id="quizQuestion" class="question-text">Câu hỏi đang được tải...</p>
+            <div class="popup-actions quiz-options">
+                <button id="btnA" class="btn btn-answer" data-answer="A">
+                    Đáp án A
+                </button>
+                <button id="btnB" class="btn btn-answer" data-answer="B">
+                    Đáp án B
+                </button>
+                <button id="btnC" class="btn btn-answer" data-answer="C">
+                    Đáp án C
+                </button>
+                <button id="btnC" class="btn btn-answer" data-answer="D">
+                    Đáp án D
+                </button>
+            </div>
+            <p id="answerResult" class="answer-result"></p>
+        </div>
+    </div>
+
+    <!-- Pháo hoa -->
+    <div id="resultModal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content">
+            <canvas id="fireworksCanvas" style="
+                    position: absolute; 
+                    top: 0; 
+                    left: 0; 
+                    z-index: 1000; 
+                    pointer-events: none;
+                    /* Tạm thời bỏ display:none để test */
+                "></canvas>
+            <h2 id="modalTitle"></h2>
+            <p id="modalMessage"></p>
+            <button id="modalCloseBtn" class="close-btn">Tiếp tục</button>
+        </div>
+    </div>
+
+    <div id="popupWrong" class="popup popup-wrong" aria-hidden="true">
+        <div class="popup-box wrong-box">
+            <div class="wrong-icon">❌</div>
+            <p class="wrong-text">Sai rồi! Hãy thử lại một ô khác nhé.</p>
+        </div>
+    </div>
+
+    <script>
+        const quizQuestions = [
+            {
+                question: "Bà Maria có thai do quyền năng của ai? (Mt 1,18)",
+                options: {
+                    A: "Thiên Thần",
+                    B: "Chúa Con",
+                    C: "Chúa Cha",
+                    D: "Chúa Thánh Thần",
+                },
+                correct: "D", // Quyền năng của Chúa Thánh Thần (Mt 1,18)
+            },
+            {
+                question: "Đức Giêsu sinh ra tại miền nào? (Mt 2,1)",
+                options: {
+                    A: "Galilê",
+                    B: "Samari",
+                    C: "Bê lem",
+                    D: "Giuđê",
+                },
+                correct: "D", // Bê-lem là thành thuộc miền Giuđê
+            },
+            {
+                question:
+                    "Những bảo vật được dâng cho Hài Nhi Giêsu là gì? (Mt 2,11)",
+                options: {
+                    A: "Nhũ hương, mật ong, mộc dược",
+                    B: "Nhũ hương, mộc dược, vàng",
+                    C: "Vàng, nhũ hương, rượu",
+                    D: "Mộc dược, bạch ngọc, nhũ hương",
+                },
+                correct: "B", // Vàng, Nhũ hương và Mộc dược
+            },
+            {
+                question: "Thánh Gioan Baotixita sinh trước Chúa Giêsu bao lâu?",
+                options: {
+                    A: "3 tháng",
+                    B: "9 tháng",
+                    C: "6 tháng",
+                    D: "1 năm",
+                },
+                correct: "C", // Thánh Gioan Baotixita sinh trước Chúa Giêsu 6 tháng (xem Lc 1)
+            },
+            {
+                question:
+                    "Trong các sách Tin Mừng Nhất Lãm, Tin Mừng nào không kể đến biến cố Chúa Giêsu Giáng Sinh?",
+                options: {
+                    A: "Tin Mừng Thánh Mác-cô",
+                    B: "Tin Mừng Thánh Mát-thêu",
+                    C: "Tin Mừng Thánh Lu-ca",
+                    D: "Tin Mừng Thánh Gioan", // (Tin Mừng Gioan không phải Nhất Lãm, nhưng cũng không kể biến cố Giáng sinh)
+                },
+                correct: "A", // Tin Mừng Mác-cô bắt đầu bằng việc Gioan Tẩy giả rao giảng.
+            },
+            {
+                question: "Chúa Giêsu sinh ra ở đâu?",
+                options: {
+                    A: "Bê-lem",
+                    B: "Na-da-rét",
+                    C: "Bê-ta-ni-a",
+                    D: "Giê-ru-sa-lem",
+                },
+                correct: "A", // Bê-lem là nơi sinh
+            },
+            {
+                question:
+                    "Lễ Giáng sinh là cử hành phụng vụ với bao nhiêu Thánh lễ?",
+                options: {
+                    A: "1",
+                    B: "3",
+                    C: "2",
+                    D: "4",
+                },
+                correct: "D", // 3 Thánh lễ: Lễ Vọng, Lễ Đêm, Lễ Rạng Đông, Lễ Ban Ngày.
+            },
+            {
+                question:
+                    "Người dân ở quốc gia nào trao đổi sách vào đêm Giáng Sinh, sau đó dành buổi tối để đọc sách và ăn sô-cô-la?",
+                options: {
+                    A: "New Zealand",
+                    B: "Iceland",
+                    C: "Na Uy",
+                    D: "Thụy Điển",
+                },
+                correct: "B", // Phong tục 'Jólabókaflóð' (lũ sách Giáng sinh) ở Iceland.
+            },
+            {
+                question: "“Merry Christmas” trong tiếng Tây Ban Nha là gì?",
+                options: {
+                    A: "Feliz Fiesta",
+                    B: "Hola Navidad",
+                    C: "Feliz Navidad",
+                    D: "Buena Fiesta",
+                },
+                correct: "C", // Feliz Navidad
+            },
+            {
+                question:
+                    "Chiếc cây kẹo (Candy Cane) và những sọc trắng đỏ xuất hiện lần đầu ở quốc gia nào?",
+                options: {
+                    A: "Ấn Độ",
+                    B: "Đức",
+                    C: "Mỹ",
+                    D: "Nga",
+                },
+                correct: "B", // Xuất hiện lần đầu ở Cologne, Đức vào năm 1670.
+            },
+            {
+                question:
+                    "Tại Australia: xe trượt tuyết của ông già Noel được kéo bởi động vật gì?",
+                options: {
+                    A: "Tuần lộc",
+                    B: "Nai",
+                    C: "Hươu",
+                    D: "Kangguru",
+                },
+                correct: "A", // Theo truyền thống vẫn là tuần lộc, mặc dù có những bài hát hoặc hình ảnh hài hước dùng kangaroo.
+            },
+            {
+                question: "Con tuần lộc nào có mũi đỏ?",
+                options: {
+                    A: "Dasher",
+                    B: "Cupid",
+                    C: "Vixen",
+                    D: "Rudolph",
+                },
+                correct: "D", // Rudolph
+            },
+            {
+                question:
+                    "Những đứa trẻ ngoan sẽ treo gì để nhận quà của ông già Noel?",
+                options: {
+                    A: "Chuông",
+                    B: "Tất",
+                    C: "Hộp bự",
+                    D: "Túi ba gang",
+                },
+                correct: "B", // Treo tất (Stockings)
+            },
+            {
+                question:
+                    "Bên cạnh cây thông, đâu là một loại cây nổi tiếng vào dịp Giáng Sinh?",
+                options: {
+                    A: "Cây bạch dương",
+                    B: "Cây bonsai",
+                    C: "Cây tầm gửi",
+                    D: "Không có, cây thông là nhất",
+                },
+                correct: "C", // Cây tầm gửi (Mistletoe)
+            },
+            {
+                question:
+                    "Santa Claus (Ông già Noel) dựa trên ai ngoài đời thật?",
+                options: {
+                    A: "Thánh Santa",
+                    B: "Thánh Claus",
+                    C: "Thánh Noel",
+                    D: "Thánh Nicholas",
+                },
+                correct: "D", // Dựa trên Thánh Nicholas (Thánh Ni-cô-la) thành Myra.
+            },
+            {
+                question: "Trẻ em nhận được gì từ Ông già Noel nếu nằm trong danh sách “Trẻ hư”?",
+                options: {
+                    A: "Một cục than",
+                    B: "Một cành khô",
+                    C: "Một túi muối",
+                    D: "Một cây kẹo gãy",
+                },
+                correct: "A", // Theo truyền thống, trẻ hư sẽ nhận được một cục than.
+            },
+            {
+                question: "Bông tuyết tượng trưng cho điều gì trong Giáng Sinh?",
+                options: {
+                    A: "Thời tiết lạnh",
+                    B: "Trang trí cho đẹp",
+                    C: "Dấu hiệu của mùa thu",
+                    D: "Sự tinh khiết và niềm vui",
+                },
+                correct: "D", // Tuyết trắng thường tượng trưng cho sự tinh khiết, niềm vui và sự bắt đầu mới.
+            },
+            {
+                question: "Thắt lưng của ông già Noel màu gì?",
+                options: {
+                    A: "Màu trắng",
+                    B: "Màu đen",
+                    C: "Màu đỏ",
+                    D: "Màu nâu",
+                },
+                correct: "B", // Thường là màu đen với khóa vàng/bạc.
+            },
+            {
+                question: "Đồ chơi của ông già Noel đến từ đâu?",
+                options: {
+                    A: "Ông tự hóa phép ra",
+                    B: "Trong xưởng nhà ông",
+                    C: "Ông lấy của người giàu chia cho người nghèo",
+                    D: "Ông bỏ tiền túi ra để mua",
+                },
+                correct: "B", // Từ xưởng đồ chơi ở Bắc Cực, nơi các chú lùn làm việc.
+            },
+        ];
+
+        // Cập nhật logic: Chỉ lấy 16 câu hỏi duy nhất (từ 19 câu gốc)
+        let availableQuestions = [...quizQuestions]; // Sao chép mảng gốc
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Xáo trộn mảng 19 câu hỏi
+        availableQuestions = shuffle(availableQuestions);
+
+        // Cắt mảng để chỉ lấy 16 câu đầu tiên (duy nhất)
+        availableQuestions = availableQuestions.slice(0, 16);
+        // console.log(`Số câu hỏi được sử dụng: ${availableQuestions.length}`);
+
+        const board = document.getElementById("gameBoard");
+        const quizPopup = document.getElementById("quizPopup");
+        const quizQuestionEl = document.getElementById("quizQuestion");
+        const btnAnswers = document.querySelectorAll(".btn-answer");
+        const popupWrong = document.getElementById("popupWrong");
+
+        // Biến toàn cục (Global Variables)
+        let lockBoard = false; // Thêm lại biến lockBoard
+        let currentQuestionIndex = 0; // Chỉ số của câu hỏi hiện tại trong availableQuestions
+        let activeCard = null; // Thẻ DOM đang được click
+
+        // Khởi tạo các biến liên quan đến modal kết quả
+        const resultModal = document.getElementById('resultModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const fireworksCanvas = document.getElementById('fireworksCanvas');
+
+        // Render board ONCE
+        function initBoard() {
+            board.innerHTML = "";
+            // CHỈ TẠO 16 THẺ BÀI (4x4)
+            for (let idx = 0; idx < 16; idx++) {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.dataset.index = idx; // Dùng để xác định vị trí thẻ
+
+                const cardCover = document.createElement("div");
+                cardCover.className = "card-cover";
+
+                const cardInner = document.createElement("div");
+                cardInner.className = "card-inner";
+
+                const front = document.createElement("div");
+                front.className = "card-front";
+                const shape = document.createElement("div");
+                shape.className = "shape";
+                shape.textContent = "CHINH PHỤC";
+                front.appendChild(shape);
+
+                const num = document.createElement("div");
+                num.className = "card-number";
+                num.textContent = idx + 1;
+                front.appendChild(num);
+
+                cardInner.appendChild(front);
+                card.appendChild(cardCover);
+                card.appendChild(cardInner);
+
+                // event: click to open quiz
+                card.addEventListener("click", () => handleCardClick(card));
+
+                board.appendChild(card);
+            }
+        }
+
+        function handleCardClick(card) {
+            if (card.classList.contains("matched") || lockBoard) return;
+
+            activeCard = card;
+            // KHÔNG CẦN lockBoard = true Ở ĐÂY. lockBoard sẽ được set sau khi chọn đáp án
+
+            const currentQ = availableQuestions[currentQuestionIndex];
+            if (!currentQ) {
+                console.error("Không tìm thấy câu hỏi ở index hiện tại.");
+                return;
+            }
+
+            // Hiển thị câu hỏi
+            quizQuestionEl.textContent = currentQ.question;
+
+            // Cập nhật đáp án
+            btnAnswers.forEach((btn) => {
+                const optionKey = btn.dataset.answer; // 'A', 'B', 'C', 'D'
+                btn.textContent = `${optionKey}. ${currentQ.options[optionKey]}`;
+            });
+
+            // Hiện popup quiz
+            quizPopup.classList.add("show");
+            quizPopup.setAttribute("aria-hidden", "false");
+        }
+
+        // Xử lý khi chọn đáp án
+        btnAnswers.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                if (!activeCard) return;
+
+                // Khóa bảng ngay khi người dùng chọn đáp án để ngăn click liên tục
+                lockBoard = true;
+
+                const currentQ = availableQuestions[currentQuestionIndex];
+                const selectedAnswer = btn.dataset.answer;
+                // const answerResultEl = document.getElementById("answerResult"); // Không cần dùng nữa
+
+                if (selectedAnswer === currentQ.correct) {
+                    // Đúng
+                    const message = "Chính xác. Tiếp tục nhé!";
+
+                    // SỬA LỖI: Truyền đủ 4 tham số
+                    showResultModal("🎉 Chính xác!", message, true, () => {
+                        // Hàm callback sau khi người dùng nhấn 'Tiếp tục'
+
+                        // ẨN POPUP QUIZ CHÍNH
+                        if (quizPopup) {
+                            quizPopup.classList.remove("show");
+                            quizPopup.setAttribute("aria-hidden", "true");
+                        }
+
+                        activeCard.classList.add("matched"); // Thẻ biến mất
+
+                        // Chuyển sang câu hỏi tiếp theo và reset
+                        currentQuestionIndex = (currentQuestionIndex + 1) % availableQuestions.length;
+                        activeCard = null;
+                        lockBoard = false;
+                    });
+                } else {
+                    // Sai
+                    const correctOption = currentQ.options[currentQ.correct];
+                    const message = `Chúc bạn may mắn lần sau :>>`;
+
+                    // SỬA LỖI: Truyền đủ 4 tham số
+                    showResultModal("❌ Sai rồi!", message, false, () => {
+                        // Hàm callback sau khi người dùng nhấn 'Tiếp tục'
+
+                        // ẨN POPUP QUIZ CHÍNH
+                        if (quizPopup) {
+                            quizPopup.classList.remove("show");
+                            quizPopup.setAttribute("aria-hidden", "true");
+                        }
+
+                        // Đẩy câu hỏi này xuống cuối danh sách chờ và chuyển sang câu hỏi tiếp theo
+                        const failedQ = availableQuestions.splice(currentQuestionIndex, 1)[0];
+                        availableQuestions.push(failedQ);
+
+                        // Nếu đã xóa 1 phần tử, index sẽ không cần thay đổi nếu không phải câu cuối.
+                        // Nếu là câu cuối cùng trong mảng, availableQuestions.length giảm 1.
+                        // Kiểm tra lại xem currentQuestionIndex có vượt quá giới hạn mới không.
+                        if (currentQuestionIndex >= availableQuestions.length) {
+                            currentQuestionIndex = 0;
+                        }
+
+                        activeCard = null; // Thẻ vẫn còn trên bảng, chỉ reset trạng thái active
+                        lockBoard = false;
+                    });
+                }
+            });
+        });
+
+        // Các biến cho hiệu ứng Tuyết rơi (giữ nguyên)
+        const snowflakes = [];
+        let browserWidth = 0;
+        let browserHeight = 0;
+        const numberOfSnowflakes = 200;
+        let resetPosition = false;
+
+        const transforms = [
+            "transform",
+            "msTransform",
+            "webkitTransform",
+            "mozTransform",
+            "oTransform",
+        ];
+        let transformProperty = null;
+
+        function getSupportedPropertyName(properties) {
+            for (let property of properties) {
+                if (typeof document.body.style[property] !== "undefined") {
+                    return property;
+                }
+            }
+            return null;
+        }
+
+        function setup() {
+            transformProperty = getSupportedPropertyName(transforms);
+            generateSnowflakes();
+            window.addEventListener("resize", handleResize);
+        }
+
+        function handleResize() {
+            resetPosition = true;
+        }
+
+        function updateSnowflake(flake) {
+            flake.counter += flake.speed / 5000;
+            flake.xPos += (flake.sign * flake.speed * Math.cos(flake.counter)) / 40;
+            flake.yPos += Math.sin(flake.counter) / 40 + flake.speed / 30;
+
+            setTranslate3DTransform(
+                flake.element,
+                Math.round(flake.xPos),
+                Math.round(flake.yPos)
+            );
+
+            if (flake.yPos > browserHeight) {
+                flake.yPos = -50;
+                flake.xPos = getRandomPosition(50, browserWidth);
+            }
+        }
+
+        function generateSnowflakes() {
+            const container = document.getElementById("snowflakeContainer");
+            const originalSnowflake = document.createElement("p");
+            originalSnowflake.className = "snowflake";
+            originalSnowflake.innerHTML =
+                "<span style=\"color:white; font-size:1em; font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;\">&#10052;</span>";
+
+            browserWidth = document.documentElement.clientWidth;
+            browserHeight = document.documentElement.clientHeight;
+
+            for (let i = 0; i < numberOfSnowflakes; i++) {
+                const snowflake = originalSnowflake.cloneNode(true);
+                container.appendChild(snowflake);
+
+                const xPos = getRandomPosition(50, browserWidth);
+                const yPos = getRandomPosition(50, browserHeight);
+                const speed = 4 + Math.random() * 10;
+                const radius = 5 + Math.random() * 40;
+
+                const flake = {
+                    element: snowflake,
+                    radius,
+                    speed,
+                    xPos,
+                    yPos,
+                    counter: Math.random() * 20,
+                    sign: Math.random() < 0.5 ? 1 : -1,
+                };
+
+                snowflake.style.fontSize = 4 + Math.random() * 30 + "px";
+                snowflake.style.opacity = (0.5 + Math.random() * 0.5).toString();
+
+                snowflakes.push(flake);
+            }
+
+            moveSnowflakes();
+        }
+
+        function moveSnowflakes() {
+            for (let flake of snowflakes) {
+                updateSnowflake(flake);
+            }
+
+            if (resetPosition) {
+                browserWidth = document.documentElement.clientWidth;
+                browserHeight = document.documentElement.clientHeight;
+
+                for (let flake of snowflakes) {
+                    flake.xPos = getRandomPosition(50, browserWidth);
+                    flake.yPos = getRandomPosition(50, browserHeight);
+                }
+
+                resetPosition = false;
+            }
+
+            requestAnimationFrame(moveSnowflakes);
+        }
+
+        function setTranslate3DTransform(element, x, y) {
+            const val = `translate3d(${x}px, ${y}px, 0)`;
+            element.style[transformProperty] = val;
+        }
+
+        function getRandomPosition(offset, size) {
+            return Math.round(-offset + Math.random() * (size + 2 * offset));
+        }
+
+        window.onload = setup;
+
+        // PHÁO HOA
+        // Hàm hiển thị modal
+        // Hàm hiển thị modal
+        function showResultModal(title, message, isCorrect, callback) {
+            modalTitle.textContent = title;
+            // ... (các thiết lập khác)
+
+            if (isCorrect) {
+                modalTitle.style.color = "#16a34a"; // Xanh lá
+                // BƯỚC SỬA 1: Hiện Canvas
+                fireworksCanvas.style.display = 'block';
+                launchFireworks(); // Bắn pháo hoa khi đúng
+            } else {
+                modalTitle.style.color = "#dc2626"; // Đỏ
+                fireworksCanvas.style.display = 'none'; // Đảm bảo ẩn Canvas khi sai
+            }
+
+            resultModal.classList.add("show-modal");
+            resultModal.setAttribute("aria-hidden", "false");
+
+            // Gán hàm xử lý tiếp tục cho nút đóng
+            modalCloseBtn.onclick = () => {
+                resultModal.classList.remove("show-modal");
+                resultModal.setAttribute("aria-hidden", "true");
+
+                // BƯỚC SỬA 2: Ẩn Canvas sau khi đóng modal
+                fireworksCanvas.style.display = 'none';
+
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            };
+        }
+
+        // Kích hoạt hiệu ứng pháo hoa/confetti
+        function launchFireworks() {
+            const modalContent = resultModal.querySelector('.modal-content');
+
+            // Lấy kích thước thực tế của modal content (phần tử cha)
+            const rect = modalContent.getBoundingClientRect();
+
+            // Gán kích thước cho Canvas.
+            // Nếu CSS đã là width/height: 100%, bước này có thể dư thừa, nhưng nó đảm bảo Canvas luôn có kích thước > 0.
+            fireworksCanvas.width = rect.width;
+            fireworksCanvas.height = rect.height;
+
+            const ctx = fireworksCanvas.getContext('2d');
+            let particles = [];
+            const particleCount = 100;
+
+            // Xóa mọi animation cũ
+            if (fireworksCanvas.animationFrameId) {
+                cancelAnimationFrame(fireworksCanvas.animationFrameId);
+            }
+
+            // Tái tạo hạt (tại vị trí ngẫu nhiên thay vì chỉ ở đáy)
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    // Bắn ra từ giữa modal
+                    x: fireworksCanvas.width / 2 + (Math.random() - 0.5) * 50,
+                    y: fireworksCanvas.height / 2 + (Math.random() * 50), // Bắn từ vùng giữa-dưới
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: -5 - Math.random() * 10,
+                    radius: 2 + Math.random() * 4,
+                    color: `hsl(${Math.random() * 360}, 100%, 70%)`
+                });
+            }
+
+            function draw() {
+                // RẤT QUAN TRỌNG: ClearRect cần phải ở đầu để xóa khung hình trước.
+                ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3; // Trọng lực
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2, false);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                }
+
+                particles = particles.filter(p => p.y < fireworksCanvas.height + p.radius && p.x > -50 && p.x < fireworksCanvas.width + 50);
+
+                if (particles.length > 0) {
+                    fireworksCanvas.animationFrameId = requestAnimationFrame(draw);
+                } else {
+                    cancelAnimationFrame(fireworksCanvas.animationFrameId);
+                    ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+                    fireworksCanvas.animationFrameId = null;
+
+                    // Ẩn Canvas sau khi hiệu ứng kết thúc
+                    fireworksCanvas.style.display = 'none';
+                }
+            }
+
+            draw();
+        }
+
+        // init
+        initBoard();
+    </script>
+</body>
+
+</html>
