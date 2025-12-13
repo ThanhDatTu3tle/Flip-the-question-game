@@ -288,14 +288,28 @@ function shuffle(arr) {
 // Xáo trộn mảng câu hỏi
 availableQuestions = shuffle(availableQuestions);
 
-// Cắt mảng để chỉ lấy 18 câu đầu tiên (duy nhất)
-availableQuestions = availableQuestions.slice(0, 18);
+// Cắt mảng để chỉ lấy 12 câu đầu tiên (duy nhất)
+availableQuestions = availableQuestions.slice(0, 12);
 // console.log(`Số câu hỏi được sử dụng: ${availableQuestions.length}`);
 
 // BLUR
 // Biến theo dõi tiến trình
 let matchedCardsCount = 0; // Đếm số thẻ đã mở
-const totalCards = 18; // Tổng số thẻ trên bảng
+const totalCards = 12; // Tổng số thẻ trên bảng
+const iconFiles = [
+  "assets/icon-1.png",  // Icon cho Thẻ 1
+  "assets/icon-2.png",  // Icon cho Thẻ 2
+  "assets/icon-3.png",  // ...
+  "assets/icon-4.png",
+  "assets/icon-5.png",
+  "assets/icon-6.png",
+  "assets/icon-7.png",
+  "assets/icon-8.png",
+  "assets/icon-9.png",
+  "assets/icon-10.png",
+  "assets/icon-11.png",
+  "assets/icon-12.png"  // Icon cho Thẻ 12
+];
 
 // Bộ chọn phần tử nền (Giả sử là body hoặc một container nào đó)
 const backgroundElement = document.getElementById("backgroundBlurLayer");
@@ -381,8 +395,9 @@ if (backgroundElement) {
 // Render board ONCE
 function initBoard() {
   board.innerHTML = "";
-  // CHỈ TẠO 18 THẺ BÀI (3x6)
-  for (let idx = 0; idx < 18; idx++) {
+  const totalIcons = iconFiles.length;
+  // CHỈ TẠO 12 THẺ BÀI (3x4)
+  for (let idx = 0; idx < 12; idx++) {
     const card = document.createElement("div");
     card.className = "card";
     card.dataset.index = idx; // Dùng để xác định vị trí thẻ
@@ -395,10 +410,18 @@ function initBoard() {
 
     const front = document.createElement("div");
     front.className = "card-front";
-    const shape = document.createElement("div");
-    shape.className = "shape";
-    shape.textContent = "CHINH PHỤC";
-    front.appendChild(shape);
+    // const shape = document.createElement("div");
+    // shape.className = "shape";
+    // shape.textContent = "CHINH PHỤC";
+    // front.appendChild(shape);
+
+    // --- PHẦN BỔ SUNG ICON ---
+    const icon = document.createElement("div");
+    icon.className = "card-icon";
+    if (idx < totalIcons) {
+      icon.style.backgroundImage = `url(${iconFiles[idx]})`;
+    }
+    front.appendChild(icon);
 
     const num = document.createElement("div");
     num.className = "card-number";
@@ -521,7 +544,7 @@ btnAnswers.forEach((btn) => {
 const snowflakes = [];
 let browserWidth = 0;
 let browserHeight = 0;
-const numberOfSnowflakes = 200;
+const numberOfSnowflakes = 222;
 let resetPosition = false;
 
 const transforms = [
@@ -598,7 +621,7 @@ function generateSnowflakes() {
       sign: Math.random() < 0.5 ? 1 : -1,
     };
 
-    snowflake.style.fontSize = 4 + Math.random() * 30 + "px";
+    snowflake.style.fontSize = 5 + Math.random() * 30 + "px";
     snowflake.style.opacity = (0.5 + Math.random() * 0.5).toString();
 
     snowflakes.push(flake);
