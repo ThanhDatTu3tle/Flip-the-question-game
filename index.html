@@ -1,87 +1,119 @@
 <!DOCTYPE html>
 <html lang="vi">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Game Lật Hình ngành Nghĩa</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rowdies:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rowdies:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-<body>
+  <body>
     <!-- Tuyết rơi -->
     <div id="snowflakeContainer"></div>
 
     <div class="wrap">
-        <!-- <h1 class="game-title">NGHĨA SĨ - CHINH PHỤC</h1> -->
-        <h1 class="game-title">CHƯƠNG TRÌNH GIÁNG SINH NGÀNH NGHĨA</h1>
-        <div class="board-wrapper">
-            <div id="gameBoardBorderRadius" class="game-board-border-radius"></div>
-            <div class="board-bg">
-                <img src="./assets/result_image.jpg" alt="background" />
-            </div>
-            <div id="gameBoard" class="game-board"></div>
+      <!-- <h1 class="game-title">NGHĨA SĨ - CHINH PHỤC</h1> -->
+      <h1 class="game-title">CHƯƠNG TRÌNH GIÁNG SINH NGÀNH NGHĨA</h1>
+      <div class="board-wrapper">
+        <div id="gameBoardBorderRadius" class="game-board-border-radius"></div>
+        <div class="board-bg">
+          <img src="./assets/result_image.jpg" alt="background" />
         </div>
+        <div id="gameBoard" class="game-board"></div>
+      </div>
     </div>
 
     <!-- popup -->
     <div id="quizPopup" class="popup">
-        <div class="popup-content">
-            <p id="quizQuestion"></p>
+      <div class="popup-content">
+        <p id="quizQuestion"></p>
 
-            <div id="multipleChoiceContainer">
-                <button class="btn-answer" data-answer="A"></button>
-                <button class="btn-answer" data-answer="B"></button>
-                <button class="btn-answer" data-answer="C"></button>
-                <button class="btn-answer" data-answer="D"></button>
-            </div>
-
-            <div id="essayContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <button id="essayRevealButton" class="btn-answer reveal-btn">
-                    Bấm vào đây để xem đáp án
-                </button>
-                <p id="essayAnswerText" style="margin-top: 20px; font-weight: bold; color: #16a34a; display: none;"></p>
-
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-                    <button id="essayContinueButton" class="btn-continue" style="margin-top: 20px;">
-                        ✅ Tiếp tục
-                    </button>
-                </div>
-            </div>
+        <div id="multipleChoiceContainer">
+          <button class="btn-answer" data-answer="A"></button>
+          <button class="btn-answer" data-answer="B"></button>
+          <button class="btn-answer" data-answer="C"></button>
+          <button class="btn-answer" data-answer="D"></button>
         </div>
+
+        <div
+          id="essayContainer"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <button id="essayRevealButton" class="btn-answer reveal-btn">
+            Bấm vào đây để xem đáp án
+          </button>
+          <p
+            id="essayAnswerText"
+            style="
+              margin-top: 20px;
+              font-weight: bold;
+              color: #16a34a;
+              display: none;
+            "
+          ></p>
+
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              width: 100%;
+            "
+          >
+            <button
+              id="essayContinueButton"
+              class="btn-continue"
+              style="margin-top: 20px"
+            >
+              ✅ Tiếp tục
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Pháo hoa -->
     <div id="resultModal" class="modal-overlay" aria-hidden="true">
-        <div class="modal-content">
-            <canvas id="fireworksCanvas" style="
-                    position: absolute; 
-                    top: 0; 
-                    left: 0; 
-                    z-index: 1000; 
-                    pointer-events: none;
-                    /* Tạm thời bỏ display:none để test */
-                "></canvas>
-            <h2 id="modalTitle"></h2>
-            <p id="modalMessage"></p>
-            <button id="modalCloseBtn" class="close-btn">Tiếp tục</button>
-        </div>
+      <div class="modal-content">
+        <canvas
+          id="fireworksCanvas"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            pointer-events: none;
+            /* Tạm thời bỏ display:none để test */
+          "
+        ></canvas>
+        <h2 id="modalTitle"></h2>
+        <p id="modalMessage"></p>
+        <button id="modalCloseBtn" class="close-btn">Tiếp tục</button>
+      </div>
     </div>
 
     <div id="popupWrong" class="popup popup-wrong" aria-hidden="true">
-        <div class="popup-box wrong-box">
-            <div class="wrong-icon">❌</div>
-            <p class="wrong-text">Sai rồi! Hãy thử lại một ô khác nhé.</p>
-        </div>
+      <div class="popup-box wrong-box">
+        <div class="wrong-icon">❌</div>
+        <p class="wrong-text">Sai rồi! Hãy thử lại một ô khác nhé.</p>
+      </div>
     </div>
 
     <div id="flashScreen"></div>
 
     <script src="script.js"></script>
-</body>
-
+  </body>
 </html>

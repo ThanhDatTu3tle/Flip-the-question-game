@@ -86,16 +86,11 @@ const quizQuestions = [
   },
   {
     question:
-      "Người dân ở quốc gia nào trao đổi sách vào đêm Giáng Sinh, sau đó dành buổi tối để đọc sách và ăn sô-cô-la?",
-    options: {
-      A: "New Zealand",
-      B: "Iceland",
-      C: "Na Uy",
-      D: "Thụy Điển",
-    },
-    correct: "B",
+      "'Gloria in excelsis deo' có nghĩa là gì?",
+    answer:
+      "Bài thánh ca của các thiên thần khi Chúa Giêsu giáng sinh, có nghĩa là “Vinh danh Thiên Chúa trên trời” (Lc 2,14)",
     used: false,
-    type: "multiple_choice", // Phong tục 'Jólabókaflóð' (lũ sách Giáng sinh) ở Iceland.
+    type: "essay", // Phong tục 'Jólabókaflóð' (lũ sách Giáng sinh) ở Iceland.
   },
   {
     question: "“Merry Christmas” trong tiếng Tây Ban Nha là gì?",
@@ -124,6 +119,14 @@ const quizQuestions = [
   },
   {
     question:
+      "Lễ Giáng sinh là cử hành phụng vụ với bao nhiêu Thánh lễ, kể tên?",
+    answer:
+      "Thánh lễ Vọng, Thánh lễ Đêm, Thánh lễ Rạng đông, Thánh lễ Ban ngày", // Thay 'correct' bằng 'answer'
+    used: false,
+    type: "essay",
+  },
+  {
+    question:
       "Tại Australia: xe trượt tuyết của ông già Noel được kéo bởi động vật gì?",
     options: {
       A: "Tuần lộc",
@@ -138,14 +141,6 @@ const quizQuestions = [
   {
     question: "Hoàng đế Lamã thời Chúa Giêsu sinh ra là ai?",
     answer: "Hoàng đế Augúttô (Lc 2,1-20)", // Thay 'correct' bằng 'answer'
-    used: false,
-    type: "essay",
-  },
-  {
-    question:
-      "Lễ Giáng sinh là cử hành phụng vụ với bao nhiêu Thánh lễ, kể tên?",
-    answer:
-      "Thánh lễ Vọng, Thánh lễ Đêm, Thánh lễ Rạng đông, Thánh lễ Ban ngày", // Thay 'correct' bằng 'answer'
     used: false,
     type: "essay",
   },
@@ -197,6 +192,12 @@ const quizQuestions = [
     correct: "D",
     used: false,
     type: "multiple_choice", // Dựa trên Thánh Nicholas (Thánh Ni-cô-la) thành Myra.
+  },
+  {
+    question: "Ông bà ngoại của Chúa Giêsu là ai?",
+    answer: "Ông Gioankim và bà Anna", // Thay 'correct' bằng 'answer'
+    used: false,
+    type: "essay",
   },
   {
     question:
@@ -260,12 +261,6 @@ const quizQuestions = [
     type: "multiple_choice",
   },
   {
-    question: "Ông bà ngoại của Chúa Giêsu là ai?",
-    answer: "Ông Gioankim và bà Anna", // Thay 'correct' bằng 'answer'
-    used: false,
-    type: "essay",
-  },
-  {
     question:
       "Đức Giêsu cùng với Mẹ Maria và thánh Giuse lên Đền Thờ Giêrusalem mừng lễ gì và khi đó Người bao nhiêu tuổi?",
     answer: "Lễ Vượt Qua và khi đó Người 12 tuổi", // Thay 'correct' bằng 'answer'
@@ -297,9 +292,9 @@ availableQuestions = availableQuestions.slice(0, 12);
 let matchedCardsCount = 0; // Đếm số thẻ đã mở
 const totalCards = 12; // Tổng số thẻ trên bảng
 const iconFiles = [
-  "assets/icon-1.png",  // Icon cho Thẻ 1
-  "assets/icon-2.png",  // Icon cho Thẻ 2
-  "assets/icon-3.png",  // ...
+  "assets/icon-1.png", // Icon cho Thẻ 1
+  "assets/icon-2.png", // Icon cho Thẻ 2
+  "assets/icon-3.png", // ...
   "assets/icon-4.png",
   "assets/icon-5.png",
   "assets/icon-6.png",
@@ -308,7 +303,7 @@ const iconFiles = [
   "assets/icon-9.png",
   "assets/icon-10.png",
   "assets/icon-11.png",
-  "assets/icon-12.png"  // Icon cho Thẻ 12
+  "assets/icon-12.png", // Icon cho Thẻ 12
 ];
 
 // Bộ chọn phần tử nền (Giả sử là body hoặc một container nào đó)
@@ -364,7 +359,7 @@ function handleCorrectAnswerFlow(callback) {
     // Đánh dấu thẻ đã được hoàn thành
     activeCard.classList.add("matched");
 
-    matchedCardsCount++; 
+    matchedCardsCount++;
     updateBlurEffect();
 
     // Chuyển sang câu hỏi tiếp theo và reset
@@ -691,7 +686,9 @@ function handleCorrectAnswerFlow(callback) {
     // Đánh dấu thẻ đã được hoàn thành
     if (activeCard) activeCard.classList.add("matched");
 
-    matchedCardsCount++; 
+    activeCard.style.backgroundColor = "transparent";
+
+    matchedCardsCount++;
     updateBlurEffect();
 
     // Chuyển sang câu hỏi tiếp theo và reset
@@ -728,7 +725,7 @@ if (essayRevealButton && essayContinueButton) {
     // Đánh dấu thẻ đã được hoàn thành
     activeCard.classList.add("matched");
 
-    matchedCardsCount++; 
+    matchedCardsCount++;
     updateBlurEffect();
 
     // Chuyển sang câu hỏi tiếp theo
