@@ -139,7 +139,7 @@ const quizQuestions = [
     type: "multiple_choice", // Theo truyền thống vẫn là tuần lộc, mặc dù có những bài hát hoặc hình ảnh hài hước dùng kangaroo.
   },
   {
-    question: "Hoàng đế Lamã thời Chúa Giêsu sinh ra là ai?",
+    question: "Hoàng đế La mã thời Chúa Giêsu sinh ra là ai?",
     answer: "Hoàng đế Augúttô (Lc 2,1-20)", // Thay 'correct' bằng 'answer'
     used: false,
     type: "essay",
@@ -283,14 +283,14 @@ function shuffle(arr) {
 // Xáo trộn mảng câu hỏi
 availableQuestions = shuffle(availableQuestions);
 
-// Cắt mảng để chỉ lấy 16 câu đầu tiên (duy nhất)
-availableQuestions = availableQuestions.slice(0, 16);
+// Cắt mảng để chỉ lấy 12 câu đầu tiên (duy nhất)
+availableQuestions = availableQuestions.slice(0, 12);
 // console.log(`Số câu hỏi được sử dụng: ${availableQuestions.length}`);
 
 // BLUR
 // Biến theo dõi tiến trình
 let matchedCardsCount = 0; // Đếm số thẻ đã mở
-const totalCards = 16; // Tổng số thẻ trên bảng
+const totalCards = 12; // Tổng số thẻ trên bảng
 const iconFiles = [
   "assets/icon-1.png", // Icon cho Thẻ 1
   "assets/icon-2.png", // Icon cho Thẻ 2
@@ -303,16 +303,12 @@ const iconFiles = [
   "assets/icon-9.png",
   "assets/icon-10.png",
   "assets/icon-11.png",
-  "assets/icon-12.png",
-  "assets/icon-13.png",
-  "assets/icon-14.png",
-  "assets/icon-15.png",
-  "assets/icon-16.png", // Icon cho Thẻ 16
+  "assets/icon-12.png" // Icon cho Thẻ 12
 ];
 
 // Bộ chọn phần tử nền (Giả sử là body hoặc một container nào đó)
 const backgroundElement = document.getElementById("backgroundBlurLayer");
-const initialBlurAmount = 16;
+const initialBlurAmount = 12;
 
 const correctSound = new Audio("audio/correct.mp3"); // Đổi đường dẫn nếu cần
 const wrongSound = new Audio("audio/wrong.mp3");
@@ -395,8 +391,8 @@ if (backgroundElement) {
 function initBoard() {
   board.innerHTML = "";
   const totalIcons = iconFiles.length;
-  // CHỈ TẠO 16 THẺ BÀI (4x4)
-  for (let idx = 0; idx < 16; idx++) {
+  // CHỈ TẠO 12 THẺ BÀI (3x4)
+  for (let idx = 0; idx < 12; idx++) {
     const card = document.createElement("div");
     card.className = "card";
     card.dataset.index = idx; // Dùng để xác định vị trí thẻ
@@ -880,16 +876,16 @@ function updateBlurEffect() {
 
   // Tính toán số lượng thẻ cần mở để đạt được mục tiêu
   // Bạn muốn độ mờ giảm từ 0 thẻ mở đến 6 thẻ mở.
-  const blurThreshold = 16;
+  const blurThreshold = 12;
 
-  // Số thẻ đã mở từ 0 đến 16 sẽ ảnh hưởng đến độ mờ.
+  // Số thẻ đã mở từ 0 đến 12 sẽ ảnh hưởng đến độ mờ.
   // Nếu matchedCardsCount > blurThreshold, độ mờ = 0.
   const progress = Math.min(matchedCardsCount, blurThreshold);
 
   // Tính toán độ mờ hiện tại (giảm tuyến tính)
-  // Ví dụ: 10px - (10px * 0/16) = 10px (0 thẻ)
-  // Ví dụ: 10px - (10px * 6/16) = 5px (6 thẻ)
-  // Ví dụ: 10px - (10px * 16/16) = 0px (16 thẻ)
+  // Ví dụ: 10px - (10px * 0/12) = 10px (0 thẻ)
+  // Ví dụ: 10px - (10px * 6/12) = 5px (6 thẻ)
+  // Ví dụ: 10px - (10px * 12/12) = 0px (12 thẻ)
   const currentBlur =
     initialBlurAmount - initialBlurAmount * (progress / blurThreshold);
 
